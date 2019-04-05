@@ -2,6 +2,7 @@ var BigNumber = require('bignumber.js')
 
 var PyObject = require('../core').Object
 var exceptions = require('../core').exceptions
+var version = require('../core').version
 var type_name = require('../core').type_name
 var create_pyclass = require('../core').create_pyclass
 var None = require('../core').None
@@ -13,7 +14,15 @@ var utils = require('./utils')
 
 function Int(val) {
     PyObject.call(this)
-    this.val = new BigNumber(val)
+    if (typeof val === 'boolean') {
+        if (this.valueOf()) {
+            this.val = new BigNumber(1)
+        } else {
+            this.val = new BigNumber(0)
+        }
+    } else {
+        this.val = new BigNumber(val)
+    }
 }
 
 create_pyclass(Int, 'int')
@@ -29,6 +38,10 @@ Int.prototype.MAX_INT = MAX_INT
 Int.prototype.MIN_INT = MIN_INT
 Int.prototype.MAX_FLOAT = MAX_FLOAT
 Int.prototype.MIN_FLOAT = MIN_FLOAT
+
+Int.prototype.__dir__ = function() {
+    return "['__abs__', '__add__', '__and__', '__bool__', '__ceil__', '__class__', '__delattr__', '__dir__', '__divmod__', '__doc__', '__eq__', '__float__', '__floor__', '__floordiv__', '__format__', '__ge__', '__getattribute__', '__getnewargs__', '__gt__', '__hash__', '__index__', '__init__', '__int__', '__invert__', '__le__', '__lshift__', '__lt__', '__mod__', '__mul__', '__ne__', '__neg__', '__new__', '__or__', '__pos__', '__pow__', '__radd__', '__rand__', '__rdivmod__', '__reduce__', '__reduce_ex__', '__repr__', '__rfloordiv__', '__rlshift__', '__rmod__', '__rmul__', '__ror__', '__round__', '__rpow__', '__rrshift__', '__rshift__', '__rsub__', '__rtruediv__', '__rxor__', '__setattr__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__truediv__', '__trunc__', '__xor__', 'bit_length', 'conjugate', 'denominator', 'from_bytes', 'imag', 'numerator', 'real', 'to_bytes']"
+}
 
 /**************************************************
  * Javascript compatibility methods
@@ -49,8 +62,8 @@ Int.prototype.valueOf = function() {
     return this.val.valueOf()
 }
 
-Int.prototype.toString = function() {
-    return this.__str__()
+Int.prototype.toString = function(base = 10) {
+    return this.__str__(base)
 }
 
 /**************************************************
@@ -65,8 +78,8 @@ Int.prototype.__repr__ = function() {
     return this.__str__()
 }
 
-Int.prototype.__str__ = function() {
-    return this.val.toFixed(0)
+Int.prototype.__str__ = function(base = 10) {
+    return this.val.round().toString(base)
 }
 
 var can_float = function(num) {
@@ -105,10 +118,27 @@ Int.prototype.__lt__ = function(other) {
         } else if (types.isinstance(other, types.Float)) {
             return this.val.lt(other.valueOf())
         } else {
-            throw new exceptions.TypeError.$pyclass('unorderable types: int() < ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: int() < ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'<' not supported between instances of 'int' and '" +
+                    type_name(other) + "'"
+                )
+            }
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: int() < NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: int() < NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<' not supported between instances of 'int' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -127,10 +157,27 @@ Int.prototype.__le__ = function(other) {
         } else if (types.isinstance(other, types.Float)) {
             return this.val.lte(other.valueOf())
         } else {
-            throw new exceptions.TypeError.$pyclass('unorderable types: int() <= ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: int() <= ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'<=' not supported between instances of 'int' and '" +
+                    type_name(other) + "'"
+                )
+            }
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: int() <= NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: int() <= NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<=' not supported between instances of 'int' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -145,6 +192,8 @@ Int.prototype.__eq__ = function(other) {
         } else {
             return this.val.eq(new Int(0))
         }
+    } else if (types.isinstance(other, types.Complex)) {
+        return other.imag === 0 && this.val.eq(other.real)
     } else {
         return false
     }
@@ -169,10 +218,27 @@ Int.prototype.__gt__ = function(other) {
         } else if (types.isinstance(other, types.Float)) {
             return this.val.gt(other.valueOf())
         } else {
-            throw new exceptions.TypeError.$pyclass('unorderable types: int() > ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: int() > ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'>' not supported between instances of 'int' and '" +
+                    type_name(other) + "'"
+                )
+            }
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: int() > NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: int() > NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>' not supported between instances of 'int' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -191,10 +257,27 @@ Int.prototype.__ge__ = function(other) {
         } else if (types.isinstance(other, types.Float)) {
             return this.val.gte(other.valueOf())
         } else {
-            throw new exceptions.TypeError.$pyclass('unorderable types: int() >= ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: int() >= ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'>=' not supported between instances of 'int' and '" +
+                    type_name(other) + "'"
+                )
+            }
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: int() >= NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: int() >= NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>=' not supported between instances of 'int' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -241,7 +324,7 @@ Int.prototype.__pow__ = function(other) {
             return new Int(1)
         }
     } else if (types.isinstance(other, Int)) {
-        if (other.val.isNegative()) {
+        if (isNeg(other)) {
             return this.__float__().__pow__(other)
         } else {
             var y = other.val.toString(2).split('')
@@ -258,6 +341,38 @@ Int.prototype.__pow__ = function(other) {
         }
     } else if (types.isinstance(other, types.Float)) {
         return this.__float__().__pow__(other)
+    } else if (types.isinstance(other, types.Complex)) {
+        if (!can_float(this.val)) {
+            throw new exceptions.OverflowError.$pyclass('int too large to convert to float')
+        }
+
+        var result_real, result_imag
+        if (other.real === 0 && other.imag === 0) {
+            result_real = 1
+            result_imag = 0
+        } else if (this.val.eq(0)) {
+            if (other.imag !== 0 || other.real < 0) {
+                throw new exceptions.ZeroDivisionError.$pyclass('0.0 to a negative or complex power')
+            }
+            result_real = 0
+            result_imag = 0
+        } else {
+            var len = Math.pow(Math.abs(this.val), other.real)
+            if (len > MAX_FLOAT.val || len < MIN_FLOAT.val) {
+                throw new exceptions.OverflowError.$pyclass('complex exponentiation')
+            }
+
+            var at = Math.atan2(0, this.val)
+            var phase = at * other.real
+            if (other.imag !== 0) {
+                len /= Math.exp(at * other.imag)
+                phase += other.imag * Math.log(Math.abs(this.val))
+            }
+            result_real = len * Math.cos(phase)
+            result_imag = len * Math.sin(phase)
+        }
+
+        return new types.Complex(result_real, result_imag)
     } else {
         throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for ** or pow(): 'int' and '" + type_name(other) + "'")
     }
@@ -281,7 +396,7 @@ Int.prototype.__floordiv__ = function(other) {
             }
             // we have a fraction leftover
             // check if it is too small for bignumber.js to detect
-            if (quo.isInt() && quo.isNegative()) {
+            if (quo.isInt() && (quo.isNegative() && !quo.isZero())) {
                 return new Int(quo.sub(1))
             }
             return new Int(quo_floor)
@@ -374,7 +489,7 @@ Int.prototype.__mul__ = function(other) {
         if (this.val.gt(MAX_INT.val) || this.val.lt(MIN_INT.val)) {
             throw new exceptions.OverflowError.$pyclass("cannot fit 'int' into an index-sized integer")
         }
-        if (this.val.isNegative()) {
+        if (isNeg(this)) {
             return ''
         }
         var size = this.val.mul(other.length)
@@ -406,6 +521,32 @@ Int.prototype.__mul__ = function(other) {
         result = new types.Tuple()
         for (i = 0; i < this.valueOf(); i++) {
             result = result.__add__(other)
+        }
+        return result
+    } else if (types.isinstance(other, types.Bytes)) {
+        if (this.val.gt(MAX_INT.val) || this.val.lt(MIN_INT.val)) {
+            throw new exceptions.OverflowError.$pyclass("cannot fit 'int' into an index-sized integer")
+        }
+        if ((other.__len__() <= 0) || (this.valueOf() <= 0)) {
+            return new types.Bytes('')
+        }
+        if (this.valueOf() > 4294967295) {
+            throw new exceptions.OverflowError.$pyclass('repeated bytes are too long')
+        }
+        return other.__mul__(this)
+    } else if (types.isinstance(other, types.Bytearray)) {
+        if (this.val.gt(MAX_INT.val) || this.val.lt(MIN_INT.val)) {
+            throw new exceptions.OverflowError.$pyclass("cannot fit 'int' into an index-sized integer")
+        }
+        if ((other.length <= 0) || (this.valueOf() <= 0)) {
+            return new types.Bytearray('')
+        }
+        if (this.valueOf() > 4294967295) {
+            throw new exceptions.MemoryError.$pyclass('')
+        }
+        result = new types.Bytearray('')
+        for (i = 0; i < this.valueOf(); i++) {
+            result = new types.Bytearray(result.valueOf() + other.valueOf())
         }
         return result
     } else if (types.isinstance(other, types.Complex)) {
@@ -497,7 +638,6 @@ Int.prototype.__getitem__ = function(index) {
 Int.prototype.__setattr__ = function(other) {
     throw new exceptions.AttributeError.$pyclass("'int' object has no attribute '" + other + "'")
 }
-
 /**************************************************
  * Bitshift and logical ops
  **************************************************/
@@ -512,13 +652,18 @@ Int.prototype._bits = function() {
     return toArray(this)
 }
 
+// bignumber allows -0, which is sort of negative, but we don't want that
+var isNeg = function(n) {
+    return n.val.isNeg() && !n.val.isZero()
+}
+
 // convert a binary array back into an int
 var fromArray = function(arr) {
     return new Int(new BigNumber(arr.join('') || 0, 2))
 }
 // return j with the sign inverted if i is negative.
 var fixSign = function(i, j) {
-    if (i.val.isNeg()) {
+    if (isNeg(i)) {
         return j.__neg__()
     }
     return j
@@ -544,7 +689,7 @@ var plusOne = function(arr) {
 // twos complement representation
 var twos_complement = function(n) {
     var arr = toArray(n)
-    if (n.val.isNeg()) {
+    if (isNeg(n)) {
         arr = invert(arr)
         plusOne(arr)
     }
@@ -601,7 +746,7 @@ Int.prototype.__rshift__ = function(other) {
     var types = require('../types')
 
     if (types.isinstance(other, Int)) {
-        if (this.val.isNegative()) {
+        if (isNeg(this)) {
             return this.__invert__().__rshift__(other).__invert__()
         }
         // Anything beyond ~8192 bits is too inefficient to convert to a binary array
@@ -612,7 +757,7 @@ Int.prototype.__rshift__ = function(other) {
         if (other.val.gt(REASONABLE_SHIFT.val)) {
             throw new exceptions.ValueError.$pyclass('batavia: shift too large')
         }
-        if (other.val.isNegative()) {
+        if (isNeg(other)) {
             throw new exceptions.ValueError.$pyclass('negative shift count')
         }
         if (this.val.isZero()) {
@@ -639,8 +784,8 @@ Int.prototype.__and__ = function(other) {
     if (types.isinstance(other, Int)) {
         var a = twos_complement(this)
         var b = twos_complement(other)
-        extend(a, b, this.val.isNeg())
-        extend(b, a, other.val.isNeg())
+        extend(a, b, isNeg(this))
+        extend(b, a, isNeg(other))
         var i = a.length - 1
         var j = b.length - 1
         var arr = []
@@ -650,7 +795,7 @@ Int.prototype.__and__ = function(other) {
             j--
         }
         arr.reverse()
-        if (this.val.isNeg() && other.val.isNeg()) {
+        if (isNeg(this) && isNeg(other)) {
             arr = invert(arr)
             return fromArray(arr).__add__(new Int(1)).__neg__()
         }
@@ -669,10 +814,10 @@ Int.prototype.__xor__ = function(other) {
     var types = require('../types')
 
     if (types.isinstance(other, Int)) {
-        if (this.val.isNeg()) {
+        if (isNeg(this)) {
             return this.__invert__().__xor__(other).__invert__()
         }
-        if (other.val.isNeg()) {
+        if (isNeg(other)) {
             return this.__xor__(other.__invert__()).__invert__()
         }
         var a = twos_complement(this)
@@ -714,8 +859,8 @@ Int.prototype.__or__ = function(other) {
         }
         var a = twos_complement(this)
         var b = twos_complement(other)
-        extend(a, b, this.val.isNeg())
-        extend(b, a, other.val.isNeg())
+        extend(a, b, isNeg(this))
+        extend(b, a, isNeg(other))
         var i = a.length - 1
         var j = b.length - 1
         var arr = []
@@ -725,7 +870,7 @@ Int.prototype.__or__ = function(other) {
             j--
         }
         arr.reverse()
-        if (this.val.isNeg() || other.val.isNeg()) {
+        if (isNeg(this) || isNeg(other)) {
             arr = invert(arr)
             return fromArray(arr).__add__(new Int(1)).__neg__()
         }

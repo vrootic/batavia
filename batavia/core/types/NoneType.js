@@ -4,6 +4,7 @@
 var PyObject = require('./Object')
 var basic_types = require('./Type')
 var exceptions = require('../exceptions')
+var version = require('../version')
 
 function NoneType() {
     PyObject.call(this)
@@ -12,6 +13,10 @@ function NoneType() {
 NoneType.prototype = Object.create(PyObject.prototype)
 NoneType.prototype.__class__ = new basic_types.Type('NoneType')
 NoneType.prototype.__name__ = 'NoneType'
+
+NoneType.prototype.__dir__ = function() {
+    return "['__bool__', '__class__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__le__', '__lt__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__']"
+}
 
 /**************************************************
  * Type conversions
@@ -48,11 +53,29 @@ NoneType.prototype.__setattr__ = function(attr, value) {
  **************************************************/
 
 NoneType.prototype.__lt__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: NoneType() < ' + basic_types.type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: NoneType() < ' + basic_types.type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<' not supported between instances of 'NoneType' and '" +
+            basic_types.type_name(other) + "'"
+        )
+    }
 }
 
 NoneType.prototype.__le__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: NoneType() <= ' + basic_types.type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: NoneType() <= ' + basic_types.type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<=' not supported between instances of 'NoneType' and '" +
+            basic_types.type_name(other) + "'"
+        )
+    }
 }
 
 NoneType.prototype.__eq__ = function(other) {
@@ -64,11 +87,29 @@ NoneType.prototype.__ne__ = function(other) {
 }
 
 NoneType.prototype.__gt__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: NoneType() > ' + basic_types.type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: NoneType() > ' + basic_types.type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'>' not supported between instances of 'NoneType' and '" +
+            basic_types.type_name(other) + "'"
+        )
+    }
 }
 
 NoneType.prototype.__ge__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: NoneType() >= ' + basic_types.type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: NoneType() >= ' + basic_types.type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'>=' not supported between instances of 'NoneType' and '" +
+            basic_types.type_name(other) + "'"
+        )
+    }
 }
 
 NoneType.prototype.__contains__ = function(other) {

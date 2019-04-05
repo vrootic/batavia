@@ -4,6 +4,7 @@
 var PyObject = require('./Object')
 var basic_types = require('./Type')
 var exceptions = require('../exceptions')
+var version = require('../version')
 
 function NotImplementedType() {
     PyObject.call(this)
@@ -11,6 +12,10 @@ function NotImplementedType() {
 
 NotImplementedType.prototype = Object.create(PyObject.prototype)
 NotImplementedType.prototype.__class__ = new basic_types.Type('NotImplementedType')
+
+NotImplementedType.prototype.__dir__ = function() {
+    return "['__class__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__le__', '__lt__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__']"
+}
 
 /**************************************************
  * Javascript compatibility methods
@@ -42,11 +47,29 @@ NotImplementedType.prototype.__str__ = function() {
  **************************************************/
 
 NotImplementedType.prototype.__lt__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: NotImplementedType() < ' + basic_types.type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: NotImplementedType() < ' + basic_types.type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<' not supported between instances of 'NotImplementedType' and '" +
+            basic_types.type_name(other) + "'"
+        )
+    }
 }
 
 NotImplementedType.prototype.__le__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: NotImplementedType() <= ' + basic_types.type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: NotImplementedType() <= ' + basic_types.type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<=' not supported between instances of 'NotImplementedType' and '" +
+            basic_types.type_name(other) + "'"
+        )
+    }
 }
 
 NotImplementedType.prototype.__eq__ = function(other) {
@@ -58,11 +81,29 @@ NotImplementedType.prototype.__ne__ = function(other) {
 }
 
 NotImplementedType.prototype.__gt__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: NotImplementedType() > ' + basic_types.type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: NotImplementedType() > ' + basic_types.type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'>' not supported between instances of 'NotImplementedType' and '" +
+            basic_types.type_name(other) + "'"
+        )
+    }
 }
 
 NotImplementedType.prototype.__ge__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: NotImplementedType() >= ' + basic_types.type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: NotImplementedType() >= ' + basic_types.type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'>=' not supported between instances of 'NotImplementedType' and '" +
+            basic_types.type_name(other) + "'"
+        )
+    }
 }
 
 NotImplementedType.prototype.__contains__ = function(other) {
@@ -131,7 +172,7 @@ NotImplementedType.prototype.__sub__ = function(other) {
 }
 
 NotImplementedType.prototype.__getitem__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('NotImplementedType.__getitem__ has not been implemented')
+    throw new exceptions.TypeError.$pyclass("'NotImplementedType' object is not subscriptable")
 }
 
 NotImplementedType.prototype.__lshift__ = function(other) {

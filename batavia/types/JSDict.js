@@ -1,4 +1,5 @@
 var exceptions = require('../core').exceptions
+var version = require('../core').version
 var type_name = require('../core').type_name
 var None = require('../core').None
 
@@ -65,12 +66,28 @@ JSDict.prototype.__lt__ = function(other) {
             types.Int, types.JSDict, types.List,
             types.NoneType, types.Str, types.Tuple
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: dict() < ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: dict() < ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'<' not supported between instances of 'dict' and '" + type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() < other.valueOf()
         }
     }
-    throw new exceptions.TypeError.$pyclass('unorderable types: dict() < NoneType()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: dict() < NoneType()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<' not supported between instances of 'dict' and 'NoneType'"
+        )
+    }
 }
 
 JSDict.prototype.__le__ = function(other) {
@@ -82,12 +99,28 @@ JSDict.prototype.__le__ = function(other) {
             types.Int, types.JSDict, types.List,
             types.NoneType, types.Str, types.Tuple
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: dict() <= ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: dict() <= ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'<=' not supported between instances of 'dict' and '" + type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() <= other.valueOf()
         }
     }
-    throw new exceptions.TypeError.$pyclass('unorderable types: dict() <= NoneType()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: dict() <= NoneType()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<=' not supported between instances of 'dict' and 'NoneType'"
+        )
+    }
 }
 
 JSDict.prototype.__eq__ = function(other) {
@@ -108,12 +141,28 @@ JSDict.prototype.__gt__ = function(other) {
             types.NoneType, types.Set, types.Str,
             types.Tuple
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: dict() > ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: dict() > ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'>' not supported between instances of 'dict' and '" + type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() > other.valueOf()
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: dict() > NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: dict() > NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>' not supported between instances of 'dict' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -126,12 +175,28 @@ JSDict.prototype.__ge__ = function(other) {
             types.Int, types.JSDict, types.List,
             types.NoneType, types.Str, types.Tuple
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: dict() >= ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: dict() >= ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'>=' not supported between instances of 'dict' and '" + type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() >= other.valueOf()
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: dict() >= NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: dict() >= NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>=' not supported between instances of 'dict' and 'NoneType'"
+            )
+        }
     }
 }
 

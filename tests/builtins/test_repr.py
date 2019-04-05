@@ -12,11 +12,18 @@ class ReprTests(TranspileTestCase):
             print(repr("".join(chr(x) for x in range(128))))
             """)
 
+    def test_repr_custom_class(self):
+        self.assertCodeExecution("""
+            class A:
+                def __repr__(self):
+                    return "Mÿ hôvèrçràft îß fûłl öf éêlś"
+            print(repr(A()))
+            """)
+
 
 class BuiltinReprFunctionTests(BuiltinFunctionTestCase, TranspileTestCase):
     function = "repr"
 
     not_implemented = [
         'test_noargs',
-        'test_class',
     ]

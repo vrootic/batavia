@@ -51,9 +51,9 @@ def setUpSuite():
     _output_dir = tempfile.mkdtemp(dir=TESTS_DIR)
 
     if os.environ.get('PRECOMPILE', 'true').lower() == 'true':
-        print("building 'batavia.js'")
+        print("building 'batavia.js' for development")
         proc = subprocess.Popen(
-            [os.path.join(os.path.dirname(TESTS_DIR), "node_modules", ".bin", "webpack"), "--bail"],
+            [os.path.join(os.path.dirname(TESTS_DIR), "node_modules", ".bin", "webpack"), "--bail", "-d"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -421,8 +421,8 @@ def _normalize_outputs(code1, code2, transform_output=None):
     processed_code1 = []
     processed_code2 = []
 
-    lines1 = code1.split(os.linesep)
-    lines2 = code2.split(os.linesep)
+    lines1 = code1.split('\n')
+    lines2 = code2.split('\n')
 
     for line1, line2 in itertools.zip_longest(lines1, lines2, fillvalue=None):
 
@@ -770,7 +770,7 @@ class NotImplementedToExpectedFailure:
 
         not_implemented_versions = getattr(self, 'not_implemented_versions', {})
         if method_name in not_implemented_versions:
-            py_version = float("%s.%s" % (sys.version_info.major, sys.version_info.minor))
+            py_version = "%s.%s" % (sys.version_info.major, sys.version_info.minor)
             if py_version in not_implemented_versions[method_name]:
                 return True
 
@@ -818,11 +818,14 @@ SAMPLE_DATA = {
             'type("MyClass", (object,), {})',
         ],
     'complex': [
+            '0j',
             '1j',
             '3.14159265j',
+            '-5j',
             '1+2j',
             '3-4j',
-            # '-5j',
+            '-2+0j',
+            # '179769313486231590772930519078902473361797697894230657273430081157732675805500963132708477322407536021120113879871393357658789768814416622492847430639474124377767893424865485276302219601246094119453082952085005768838150682342462881473913110540827237163350510684586298239947245938479716304835356329624224137216+100j',  # NOQA
         ],
     'dict': [
             '{}',

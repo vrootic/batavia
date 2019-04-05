@@ -1,5 +1,6 @@
 var create_pyclass = require('../core').create_pyclass
 var exceptions = require('../core').exceptions
+var version = require('../core').version
 var type_name = require('../core').type_name
 var utils = require('./utils')
 /*************************************************************************
@@ -9,6 +10,10 @@ var utils = require('./utils')
 var Bool = Boolean
 
 create_pyclass(Bool, 'bool', true)
+
+Bool.prototype.__dir__ = function() {
+    return "['__abs__', '__add__', '__and__', '__bool__', '__ceil__', '__class__', '__delattr__', '__dir__', '__divmod__', '__doc__', '__eq__', '__float__', '__floor__', '__floordiv__', '__format__', '__ge__', '__getattribute__', '__getnewargs__', '__gt__', '__hash__', '__index__', '__init__', '__int__', '__invert__', '__le__', '__lshift__', '__lt__', '__mod__', '__mul__', '__ne__', '__neg__', '__new__', '__or__', '__pos__', '__pow__', '__radd__', '__rand__', '__rdivmod__', '__reduce__', '__reduce_ex__', '__repr__', '__rfloordiv__', '__rlshift__', '__rmod__', '__rmul__', '__ror__', '__round__', '__rpow__', '__rrshift__', '__rshift__', '__rsub__', '__rtruediv__', '__rxor__', '__setattr__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__truediv__', '__trunc__', '__xor__', 'bit_length', 'conjugate', 'denominator', 'from_bytes', 'imag', 'numerator', 'real', 'to_bytes']"
+}
 
 /**************************************************
  * Type conversions
@@ -64,6 +69,14 @@ Bool.prototype.__eq__ = function(other) {
         } else {
             return false
         }
+    } else if (types.isinstance(other, types.Complex)) {
+        var this_bool
+        if (this.valueOf()) {
+            this_bool = 1
+        } else {
+            this_bool = 0
+        }
+        return other.imag === 0 && this_bool === other.real
     } else {
         return false
     }
@@ -99,7 +112,15 @@ Bool.prototype.__ge__ = function(other) {
         }
         return new Bool(this_bool >= other_bool)
     } else if (types.isbataviainstance(other)) {
-        throw new exceptions.TypeError.$pyclass('unorderable types: bool() >= ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: bool() >= ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>=' not supported between instances of 'bool' and '" + type_name(other) + "'"
+            )
+        }
     } else {
         throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for >=: 'bool' and '" + type_name(other) + "'")
     }
@@ -131,7 +152,16 @@ Bool.prototype.__gt__ = function(other) {
         }
         return new Bool(this_bool > other_bool)
     } else if (types.isbataviainstance(other)) {
-        throw new exceptions.TypeError.$pyclass('unorderable types: bool() > ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: bool() > ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>' not supported between instances of 'bool' and '" +
+                type_name(other) + "'"
+            )
+        }
     } else {
         throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for >: 'bool' and '" + type_name(other) + "'")
     }
@@ -163,7 +193,16 @@ Bool.prototype.__le__ = function(other) {
         }
         return new Bool(this_bool <= other_bool)
     } else if (types.isbataviainstance(other)) {
-        throw new exceptions.TypeError.$pyclass('unorderable types: bool() <= ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: bool() <= ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<=' not supported between instances of 'bool' and '" +
+                type_name(other) + "'"
+            )
+        }
     } else {
         throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for <=: 'bool' and '" + type_name(other) + "'")
     }
@@ -195,7 +234,16 @@ Bool.prototype.__lt__ = function(other) {
         }
         return new Bool(this_bool < other_bool)
     } else if (types.isbataviainstance(other)) {
-        throw new exceptions.TypeError.$pyclass('unorderable types: bool() < ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: bool() < ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<' not supported between instances of 'bool' and '" +
+                type_name(other) + "'"
+            )
+        }
     } else {
         throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for <: 'bool' and '" + type_name(other) + "'")
     }
@@ -263,7 +311,7 @@ Bool.prototype.__pow__ = function(other) {
             }
         } else {
             if (types.isinstance(other, types.Complex)) {
-                throw new exceptions.ZeroDivisionError.$pyclass('0.0 to a negative or complex power')
+                return new types.Int(0).__pow__(other)
             } else if (other.__lt__(new types.Float(0.0))) {
                 throw new exceptions.ZeroDivisionError.$pyclass('0.0 cannot be raised to a negative power')
             } else if (types.isinstance(other, types.Int)) {
@@ -377,7 +425,8 @@ Bool.prototype.__mul__ = function(other) {
         }
     } else {
         throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for *: 'bool' and '" + type_name(other) + "'")
-    } }
+    }
+}
 
 Bool.prototype.__mod__ = function(other) {
     var types = require('../types')
@@ -533,7 +582,8 @@ Bool.prototype.__lshift__ = function(other) {
         return new types.Int(this_bool << other.valueOf())
     } else {
         throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for <<: 'bool' and '" + type_name(other) + "'")
-    } }
+    }
+}
 
 Bool.prototype.__rshift__ = function(other) {
     var types = require('../types')
@@ -560,7 +610,8 @@ Bool.prototype.__rshift__ = function(other) {
         return new types.Int(this_bool >> other.valueOf())
     } else {
         throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for >>: 'bool' and '" + type_name(other) + "'")
-    } }
+    }
+}
 
 Bool.prototype.__and__ = function(other) {
     var types = require('../types')

@@ -1,5 +1,6 @@
 var PyObject = require('../core').Object
 var exceptions = require('../core').exceptions
+var version = require('../core').version
 var type_name = require('../core').type_name
 var create_pyclass = require('../core').create_pyclass
 var None = require('../core').None
@@ -18,6 +19,16 @@ create_pyclass(Float, 'float')
 
 function python_modulo(n, M) {
     return ((n % M) + M) % M
+}
+
+var MAX_FLOAT = new Float('179769313486231580793728971405303415079934132710037826936173778980444968292764750946649017977587207096330286416692887910946555547851940402630657488671505820681908902000708383676273854845817711531764475730270069855571366959622842914819860834936475292719074168444365510704342711559699508093042880177904174497791')
+var MIN_FLOAT = new Float('-179769313486231580793728971405303415079934132710037826936173778980444968292764750946649017977587207096330286416692887910946555547851940402630657488671505820681908902000708383676273854845817711531764475730270069855571366959622842914819860834936475292719074168444365510704342711559699508093042880177904174497791')
+
+Float.prototype.MAX_FLOAT = MAX_FLOAT
+Float.prototype.MIN_FLOAT = MIN_FLOAT
+
+Float.prototype.__dir__ = function() {
+    return "['__abs__', '__add__', '__bool__', '__class__', '__delattr__', '__dir__', '__divmod__', '__doc__', '__eq__', '__float__', '__floordiv__', '__format__', '__ge__', '__getattribute__', '__getformat__', '__getnewargs__', '__gt__', '__hash__', '__init__', '__int__', '__le__', '__lt__', '__mod__', '__mul__', '__ne__', '__neg__', '__new__', '__pos__', '__pow__', '__radd__', '__rdivmod__', '__reduce__', '__reduce_ex__', '__repr__', '__rfloordiv__', '__rmod__', '__rmul__', '__round__', '__rpow__', '__rsub__', '__rtruediv__', '__setattr__', '__setformat__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__truediv__', '__trunc__', 'as_integer_ratio', 'conjugate', 'fromhex', 'hex', 'imag', 'is_integer', 'real']"
 }
 
 /**************************************************
@@ -44,6 +55,15 @@ Float.prototype.__repr__ = function() {
     return this.__str__()
 }
 
+function scientific_notation_exponent_fix(exp) {
+    // Python's negative exponent in scientific notation have a leading 0
+    // Input is a float string (if not in scientific notation, nothing happens)
+    if (exp.split('e-')[1] < 10) {
+        exp = exp.replace('e-', 'e-0')
+    }
+    return exp
+}
+
 Float.prototype.__str__ = function() {
     if (!isFinite(this.val)) {
         if (isNaN(this.val)) {
@@ -54,6 +74,8 @@ Float.prototype.__str__ = function() {
         }
         return 'inf'
     }
+
+    var s
     if (this.val === 0) {
         if (1 / this.val === Infinity) {
             return '0.0'
@@ -61,17 +83,25 @@ Float.prototype.__str__ = function() {
             return '-0.0'
         }
     } else if (this.val === Math.round(this.val)) {
-        var s = this.val.toString()
-        if (s.length >= 19) {
-          // force conversion to scientific
-            return this.val.toExponential()
+        // Force scientific notation if abs(integer) > 1e16
+        if (Math.abs(this.val) >= 1e16) {
+            return scientific_notation_exponent_fix(this.val.toExponential())
         }
+
+        s = this.val.toString()
         if (s.indexOf('.') < 0) {
             return s + '.0'
         }
+
         return s
     } else {
-        return this.val.toString()
+        s = this.val.toString()
+        // Force conversion to scientific notation if dot is
+        // located after 16 digits or if string starts with (-)0.0000
+        if (s.indexOf('.') >= 16 || s.startswith('0.0000') || s.startswith('-0.0000')) {
+            s = this.val.toExponential()
+        }
+        return scientific_notation_exponent_fix(s)
     }
 }
 
@@ -93,12 +123,29 @@ Float.prototype.__lt__ = function(other) {
             types.Range, types.Set, types.Slice,
             types.Bytes, types.Bytearray
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: float() < ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: float() < ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'<' not supported between instances of 'float' and '" +
+                    type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() < other.valueOf()
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: float() < NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: float() < NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<' not supported between instances of 'float' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -111,12 +158,29 @@ Float.prototype.__le__ = function(other) {
             types.NoneType, types.Str, types.NotImplementedType,
             types.Range, types.Set, types.Slice
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: float() <= ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: float() <= ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'<=' not supported between instances of 'float' and '" +
+                    type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() <= other.valueOf()
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: float() <= NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: float() <= NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<=' not supported between instances of 'float' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -133,6 +197,8 @@ Float.prototype.__eq__ = function(other) {
             }
         } else if (types.isinstance(other, types.Int)) {
             val = parseFloat(other.val)
+        } else if (types.isinstance(other, types.Complex)) {
+            return other.imag === 0 && this.valueOf() === other.real
         } else {
             val = other.valueOf()
         }
@@ -154,12 +220,29 @@ Float.prototype.__gt__ = function(other) {
             types.NoneType, types.Str, types.NotImplementedType,
             types.Range, types.Set, types.Slice
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: float() > ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: float() > ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'>' not supported between instances of 'float' and '" +
+                    type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() > other.valueOf()
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: float() > NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: float() > NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>' not supported between instances of 'float' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -173,12 +256,29 @@ Float.prototype.__ge__ = function(other) {
             types.Range, types.Set, types.Slice,
             types.Bytes, types.Bytearray
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: float() >= ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: float() >= ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'>=' not supported between instances of 'float' and '" +
+                    type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() >= other.valueOf()
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: float() >= NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: float() >= NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>=' not supported between instances of 'float' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -314,12 +414,25 @@ Float.prototype.__mul__ = function(other) {
 Float.prototype.__mod__ = function(other) {
     var types = require('../types')
 
-    /* TODO: Fix case for -0.0, which is coming out 0.0 */
     if (types.isinstance(other, types.Int)) {
         if (other.val.isZero()) {
             throw new exceptions.ZeroDivisionError.$pyclass('float modulo')
         } else {
-            return new Float(python_modulo(this.valueOf(), parseFloat(other.val)))
+            var thisNum = this.valueOf()
+            var otherNum = parseFloat(other.val)
+            var result = new Float(python_modulo(thisNum, otherNum))
+            if (otherNum > MAX_FLOAT || otherNum < MIN_FLOAT || result.toString() === 'nan' || result.toString() === 'inf' || result.toString() === '-inf') {
+                throw new exceptions.OverflowError.$pyclass(
+                    'int too large to convert to float'
+                )
+            }
+            if ((otherNum > thisNum && thisNum > 0) || (thisNum > otherNum && thisNum < 0) || thisNum === 0) {
+                return new Float(thisNum)
+            }
+            if (result.valueOf() === 0 && (thisNum % otherNum) + otherNum === otherNum) {
+                return new Float(otherNum)
+            }
+            return result
         }
     } else if (types.isinstance(other, Float)) {
         if (other.valueOf() === 0) {
@@ -520,4 +633,7 @@ Float.prototype.__trunc__ = function() {
  * Module exports
  **************************************************/
 
-module.exports = Float
+module.exports = {
+    Float: Float,
+    scientific_notation_exponent_fix: scientific_notation_exponent_fix
+}

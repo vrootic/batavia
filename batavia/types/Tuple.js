@@ -1,4 +1,4 @@
-var constants = require('../core').constants
+var version = require('../core').version
 var PyObject = require('../core').Object
 var exceptions = require('../core').exceptions
 var callables = require('../core').callables
@@ -42,6 +42,10 @@ Tuple.prototype.length = 0
 create_pyclass(Tuple, 'tuple', true)
 Tuple.prototype.constructor = Tuple
 
+Tuple.prototype.__dir__ = function() {
+    return "['__add__', '__class__', '__contains__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__gt__', '__hash__', '__init__', '__iter__', '__le__', '__len__', '__lt__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmul__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'count', 'index']"
+}
+
 /**************************************************
  * Javascript compatibility methods
  **************************************************/
@@ -59,7 +63,8 @@ Tuple.prototype.__iter__ = function() {
 }
 
 Tuple.prototype.__len__ = function() {
-    return this.length
+    var types = require('../types')
+    return new types.Int(this.length)
 }
 
 Tuple.prototype.__repr__ = function() {
@@ -87,7 +92,15 @@ Tuple.prototype.__lt__ = function(other) {
     var types = require('../types')
 
     if (!types.isinstance(other, types.Tuple)) {
-        throw new exceptions.TypeError.$pyclass('unorderable types: tuple() < ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: tuple() < ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<' not supported between instances of 'tuple' and '" + type_name(other) + "'"
+            )
+        }
     }
     if (this.length === 0 && other.length > 0) {
         return new types.Bool(true)
@@ -111,7 +124,15 @@ Tuple.prototype.__le__ = function(other) {
     var types = require('../types')
 
     if (!types.isinstance(other, types.Tuple)) {
-        throw new exceptions.TypeError.$pyclass('unorderable types: tuple() <= ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: tuple() <= ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<=' not supported between instances of 'tuple' and '" + type_name(other) + "'"
+            )
+        }
     }
     for (var i = 0; i < this.length; i++) {
         if (i >= other.length) {
@@ -153,7 +174,15 @@ Tuple.prototype.__gt__ = function(other) {
     var types = require('../types')
 
     if (!types.isinstance(other, types.Tuple)) {
-        throw new exceptions.TypeError.$pyclass('unorderable types: tuple() > ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: tuple() > ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>' not supported between instances of 'tuple' and '" + type_name(other) + "'"
+            )
+        }
     }
     if (this.length === 0 && other.length > 0) {
         return new types.Bool(false)
@@ -178,7 +207,15 @@ Tuple.prototype.__ge__ = function(other) {
     var types = require('../types')
 
     if (!types.isinstance(other, types.Tuple)) {
-        throw new exceptions.TypeError.$pyclass('unorderable types: tuple() >= ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: tuple() >= ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>=' not supported between instances of 'tuple' and '" + type_name(other) + "'"
+            )
+        }
     }
     for (var i = 0; i < this.length; i++) {
         if (i >= other.length) {
@@ -306,6 +343,10 @@ Tuple.prototype.__sub__ = function(other) {
     throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for -: 'tuple' and '" + type_name(other) + "'")
 }
 
+Tuple.prototype.__delattr__ = function(attr) {
+    throw new exceptions.AttributeError.$pyclass("'tuple' object has no attribute '" + attr + "'")
+}
+
 Tuple.prototype.__getitem__ = function(index) {
     var types = require('../types')
 
@@ -405,7 +446,7 @@ Tuple.prototype.__getitem__ = function(index) {
         return new Tuple(steppedArray)
     } else {
         var msg = 'tuple indices must be integers or slices, not '
-        if (constants.BATAVIA_MAGIC === constants.BATAVIA_MAGIC_34) {
+        if (!version.later('3.4')) {
             msg = 'tuple indices must be integers, not '
         }
         throw new exceptions.TypeError.$pyclass(msg + type_name(index))

@@ -19,6 +19,7 @@ setup(
     author_email='russell@keith-magee.com',
     url=data['homepage'],
     packages=find_packages(exclude=['docs', 'tests']),
+    python_requires='>=3.4, <=3.5',
     license='New BSD',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
@@ -32,5 +33,11 @@ setup(
         'Topic :: Software Development',
         'Topic :: Utilities',
     ],
-    test_suite='tests'
+    test_suite='tests',
+    package_urls={
+        'Funding': 'https://pybee.org/contributing/membership/',
+        'Documentation': 'http://batavia.readthedocs.io/en/latest/',
+        'Tracker': data['bugs']['url'],
+        'Source': 'https://github.com/pybee/batavia',
+    },
 )

@@ -1,4 +1,5 @@
 var exceptions = require('../core').exceptions
+var version = require('../core').version
 var type_name = require('../core').type_name
 var BigNumber = require('bignumber.js').BigNumber
 
@@ -1178,11 +1179,15 @@ function _new_subsitute(str, args, kwargs) {
         }
 
         // things that aren't allowed with strings:
-            // grouping
-            // sign
-            // alternate form
+        // grouping
+        // sign
+        // alternate form
         if (this.grouping === ',') {
-            throw new exceptions.ValueError.$pyclass("Cannot specify ',' with 's'.")
+            if (version.earlier('3.6')) {
+                throw new exceptions.ValueError.$pyclass("Cannot specify ',' with 's'.")
+            } else {
+                throw new exceptions.ValueError.$pyclass("Cannot specify ',' or '_' with 's'.")
+            }
         }
 
         if (this.sign) {

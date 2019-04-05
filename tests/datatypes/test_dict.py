@@ -33,11 +33,16 @@ class DictTests(TranspileTestCase):
             print(x)
             """)
 
+        subst = {
+            'str() < int()': ['int() < str()'],
+            "'str' and 'int'": ["'int' and 'str'"],
+        }
+
         # keys with the same string representation
         self.assertCodeExecution("""
             x = {1: 2, '1': 1}
             print(sorted(x.items()))
-            """, substitutions={'str() < int()': ['int() < str()']})
+        """, substitutions=subst)
 
     def test_getitem(self):
         # Simple existent key
@@ -255,6 +260,14 @@ class DictTests(TranspileTestCase):
             d = {}
             print(d.fromkeys([], None, None))
         """)
+
+    def test_len(self):
+        self.assertCodeExecution("""
+        print(len(dict()))
+        print(type(len(dict())))
+        print(len({1: 2}))
+        """)
+
 
 
 class UnaryDictOperationTests(UnaryOperationTestCase, TranspileTestCase):

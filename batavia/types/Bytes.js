@@ -1,6 +1,7 @@
 var Buffer = require('buffer').Buffer
 
 var constants = require('../core').constants
+var version = require('../core').version
 var PyObject = require('../core').Object
 var create_pyclass = require('../core').create_pyclass
 var exceptions = require('../core').exceptions
@@ -18,6 +19,10 @@ function Bytes(val) {
 }
 
 create_pyclass(Bytes, 'bytes')
+
+Bytes.prototype.__dir__ = function() {
+    return "['__add__', '__class__', '__contains__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__gt__', '__hash__', '__init__', '__iter__', '__le__', '__len__', '__lt__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmul__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'capitalize', 'center', 'count', 'decode', 'endswith', 'expandtabs', 'find', 'fromhex', 'index', 'isalnum', 'isalpha', 'isdigit', 'islower', 'isspace', 'istitle', 'isupper', 'join', 'ljust', 'lower', 'lstrip', 'maketrans', 'partition', 'replace', 'rfind', 'rindex', 'rjust', 'rpartition', 'rsplit', 'rstrip', 'split', 'splitlines', 'startswith', 'strip', 'swapcase', 'title', 'translate', 'upper', 'zfill']"
+}
 
 /**************************************************
  * Javascript compatibility methods
@@ -89,7 +94,16 @@ Bytes.prototype.__lt__ = function(other) {
     if (types.isinstance(other, Bytes)) {
         return this.val < other.val
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: bytes() < ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: bytes() < ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<' not supported between instances of 'bytes' and '" +
+                type_name(other) + "'"
+            )
+        }
     }
 }
 
@@ -99,7 +113,16 @@ Bytes.prototype.__le__ = function(other) {
     if (types.isinstance(other, Bytes)) {
         return this.val <= other.val
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: bytes() <= ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: bytes() <= ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<=' not supported between instances of 'bytes' and '" +
+                type_name(other) + "'"
+            )
+        }
     }
 }
 
@@ -127,7 +150,16 @@ Bytes.prototype.__gt__ = function(other) {
     if (types.isinstance(other, Bytes)) {
         return this.val > other.val
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: bytes() > ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: bytes() > ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>' not supported between instances of 'bytes' and '" +
+                type_name(other) + "'"
+            )
+        }
     }
 }
 
@@ -137,7 +169,16 @@ Bytes.prototype.__ge__ = function(other) {
     if (types.isinstance(other, Bytes)) {
         return this.val >= other.val
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: bytes() >= ' + type_name(other) + '()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: bytes() >= ' + type_name(other) + '()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>=' not supported between instances of 'bytes' and '" +
+                type_name(other) + "'"
+            )
+        }
     }
 }
 
@@ -168,19 +209,19 @@ Bytes.prototype.__contains__ = function(other) {
  **************************************************/
 
 Bytes.prototype.__pos__ = function() {
-    return new Bytes(+this.valueOf())
+    throw new exceptions.TypeError.$pyclass("bad operand type for unary +: 'bytes'")
 }
 
 Bytes.prototype.__neg__ = function() {
-    return new Bytes(-this.valueOf())
+    throw new exceptions.TypeError.$pyclass("bad operand type for unary -: 'bytes'")
 }
 
 Bytes.prototype.__not__ = function() {
-    return new Bytes(!this.valueOf())
+    return this.val.length === 0
 }
 
 Bytes.prototype.__invert__ = function() {
-    return new Bytes(~this.valueOf())
+    throw new exceptions.TypeError.$pyclass("bad operand type for unary ~: 'bytes'")
 }
 
 /**************************************************
@@ -188,7 +229,7 @@ Bytes.prototype.__invert__ = function() {
  **************************************************/
 
 Bytes.prototype.__pow__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytes.__pow__ has not been implemented')
+    throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for ** or pow(): 'bytes' and '" + type_name(other) + "'")
 }
 
 Bytes.prototype.__div__ = function(other) {
@@ -206,24 +247,7 @@ Bytes.prototype.__floordiv__ = function(other) {
 }
 
 Bytes.prototype.__truediv__ = function(other) {
-    var types = require('../types')
-
-    if (types.isinstance(other, [
-        types.Bool,
-        Bytes,
-        types.Dict,
-        types.Int,
-        types.Float,
-        types.List,
-        types.NoneType,
-        types.Set,
-        types.Str,
-        types.Tuple ])) {
-        // does not concat with all these
-        throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for /: 'bytes' and '" + type_name(other) + "'")
-    } else {
-        throw new exceptions.NotImplementedError.$pyclass('Bytes.__truediv__ has not been implemented')
-    }
+    throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for /: 'bytes' and '" + type_name(other) + "'")
 }
 
 Bytes.prototype.__mul__ = function(other) {
@@ -258,7 +282,13 @@ Bytes.prototype.__mul__ = function(other) {
 }
 
 Bytes.prototype.__mod__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytes.__mod__ has not been implemented')
+    let types = require('../types')
+
+    if (types.isinstance(other, [types.Complex])) {
+        throw new exceptions.TypeError.$pyclass("can't mod complex numbers.")
+    } else {
+        throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for %: 'bytes' and '" + type_name(other) + "'")
+    }
 }
 
 Bytes.prototype.__add__ = function(other) {
@@ -268,6 +298,10 @@ Bytes.prototype.__add__ = function(other) {
         // create a new buffer object of combined length and then write the concatenated string value of both byte objects
         let byteBuffer = Buffer.alloc(this.valueOf().length + other.valueOf().length)
         byteBuffer.write(this.valueOf().toString() + other.valueOf().toString())
+        return new Bytes(byteBuffer)
+    } else if (types.isinstance(other, [types.Bytearray])) {
+        let byteBuffer = Buffer.alloc(this.valueOf().length + other.valueOf().valueOf().length)
+        byteBuffer.write(this.valueOf().toString() + other.valueOf().valueOf().toString())
         return new Bytes(byteBuffer)
     } else if (types.isinstance(other, [
         types.Bool,
@@ -280,31 +314,22 @@ Bytes.prototype.__add__ = function(other) {
         types.Str,
         types.Tuple ])) {
         // does not concat with all these
-        throw new exceptions.TypeError.$pyclass("can't concat bytes to " + type_name(other))
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                "can't concat bytes to " + type_name(other)
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "can't concat " + type_name(other) + ' to bytes'
+            )
+        }
     } else {
-        throw new exceptions.NotImplementedError.$pyclass('Bytes.__add__ has not been implemented')
+        throw new exceptions.TypeError.$pyclass("can't concat bytes to " + type_name(other))
     }
 }
 
 Bytes.prototype.__sub__ = function(other) {
-    var types = require('../types')
-
-    if (types.isinstance(other, [
-        types.Bool,
-        Bytes,
-        types.Dict,
-        types.Int,
-        types.Float,
-        types.List,
-        types.NoneType,
-        types.Set,
-        types.Str,
-        types.Tuple ])) {
-        // does not concat with all these
-        throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for -: 'bytes' and '" + type_name(other) + "'")
-    } else {
-        throw new exceptions.NotImplementedError.$pyclass('Bytes.__sub__ has not been implemented')
-    }
+    throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for -: 'bytes' and '" + type_name(other) + "'")
 }
 
 Bytes.prototype.__getitem__ = function(other) {
@@ -320,23 +345,23 @@ Bytes.prototype.__getitem__ = function(other) {
 }
 
 Bytes.prototype.__lshift__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytes.__lshift__ has not been implemented')
+    throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for <<: 'bytes' and '" + type_name(other) + "'")
 }
 
 Bytes.prototype.__rshift__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytes.__rshift__ has not been implemented')
+    throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for >>: 'bytes' and '" + type_name(other) + "'")
 }
 
 Bytes.prototype.__and__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytes.__and__ has not been implemented')
+    throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for &: 'bytes' and '" + type_name(other) + "'")
 }
 
 Bytes.prototype.__xor__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytes.__xor__ has not been implemented')
+    throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for ^: 'bytes' and '" + type_name(other) + "'")
 }
 
 Bytes.prototype.__or__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytes.__or__ has not been implemented')
+    throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for |: 'bytes' and '" + type_name(other) + "'")
 }
 
 /**************************************************
@@ -358,7 +383,7 @@ Bytes.prototype.__itruediv__ = function(other) {
 }
 
 Bytes.prototype.__iadd__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytes.__iadd__ has not been implemented')
+    return this['__add__'](other)
 }
 
 Bytes.prototype.__isub__ = function(other) {
@@ -386,7 +411,7 @@ Bytes.prototype.__irshift__ = function(other) {
 }
 
 Bytes.prototype.__iand__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytes.__iand__ has not been implemented')
+    throw new exceptions.TypeError.$pyclass("unsupported operand type(s) for &=: 'bytes' and '" + type_name(other) + "'")
 }
 
 Bytes.prototype.__ixor__ = function(other) {

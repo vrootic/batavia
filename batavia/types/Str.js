@@ -2,6 +2,7 @@ var Buffer = require('buffer').Buffer
 
 var PyObject = require('../core').Object
 var constants = require('../core').constants
+var version = require('../core').version
 var exceptions = require('../core').exceptions
 var type_name = require('../core').type_name
 var create_pyclass = require('../core').create_pyclass
@@ -16,6 +17,10 @@ var StrUtils = require('./StrUtils')
 var Str = String
 
 create_pyclass(Str, 'str', true)
+
+Str.prototype.__dir__ = function() {
+    return "['__add__', '__class__', '__contains__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__gt__', '__hash__', '__init__', '__iter__', '__le__', '__len__', '__lt__', '__mod__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmod__', '__rmul__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'capitalize', 'casefold', 'center', 'count', 'encode', 'endswith', 'expandtabs', 'find', 'format', 'format_map', 'index', 'isalnum', 'isalpha', 'isdecimal', 'isdigit', 'isidentifier', 'islower', 'isnumeric', 'isprintable', 'isspace', 'istitle', 'isupper', 'join', 'ljust', 'lower', 'lstrip', 'maketrans', 'partition', 'replace', 'rfind', 'rindex', 'rjust', 'rpartition', 'rsplit', 'rstrip', 'split', 'splitlines', 'startswith', 'strip', 'swapcase', 'title', 'translate', 'upper', 'zfill']"
+}
 
 /**************************************************
  * Type conversions
@@ -74,6 +79,10 @@ Str.prototype.__setattr__ = function(attr, value) {
     }
 }
 
+Str.prototype.__delattr__ = function(attr) {
+    throw new exceptions.AttributeError.$pyclass("'str' object has no attribute '" + attr + "'")
+}
+
 /**************************************************
  * Comparison operators
  **************************************************/
@@ -90,12 +99,29 @@ Str.prototype.__lt__ = function(other) {
             types.Range, types.Set, types.Slice,
             types.FrozenSet
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: str() < ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: str() < ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'<' not supported between instances of 'str' and '" +
+                    type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() < other
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: str() < NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: str() < NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<' not supported between instances of 'str' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -110,12 +136,29 @@ Str.prototype.__le__ = function(other) {
             types.Type, types.Complex, types.NotImplementedType,
             types.Range, types.Slice, types.FrozenSet
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: str() <= ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: str() <= ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'<=' not supported between instances of 'str' and '" +
+                    type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() <= other
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: str() <= NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: str() <= NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'<=' not supported between instances of 'str' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -166,12 +209,29 @@ Str.prototype.__gt__ = function(other) {
             types.NotImplementedType, types.Range,
             types.Slice, types.FrozenSet
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: str() > ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: str() > ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'>' not supported between instances of 'str' and '" +
+                    type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() > other
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: str() > NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: str() > NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>' not supported between instances of 'str' and 'NoneType'"
+            )
+        }
     }
 }
 
@@ -187,21 +247,46 @@ Str.prototype.__ge__ = function(other) {
             types.Range, types.Slice, types.FrozenSet
 
         ])) {
-            throw new exceptions.TypeError.$pyclass('unorderable types: str() >= ' + type_name(other) + '()')
+            if (version.earlier('3.6')) {
+                throw new exceptions.TypeError.$pyclass(
+                    'unorderable types: str() >= ' + type_name(other) + '()'
+                )
+            } else {
+                throw new exceptions.TypeError.$pyclass(
+                    "'>=' not supported between instances of 'str' and '" +
+                    type_name(other) + "'"
+                )
+            }
         } else {
             return this.valueOf() >= other
         }
     } else {
-        throw new exceptions.TypeError.$pyclass('unorderable types: str() >= NoneType()')
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                'unorderable types: str() >= NoneType()'
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "'>=' not supported between instances of 'str' and 'NoneType'"
+            )
+        }
     }
 }
+
+// ********************************************************************************************
+// By Mozilla Contributors under CC-BY-SA v2.5 or later
+// From MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+var escapeRegExp = function(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
+}
+// ********************************************************************************************
 
 Str.prototype.__contains__ = function(other) {
     var types = require('../types')
     if (!types.isinstance(other, [types.Str])) {
         throw new exceptions.TypeError.$pyclass("'in <string>' requires string as left operand, not " + type_name(other))
     } else {
-        return this.valueOf().search(other.valueOf()) >= 0
+        return this.valueOf().search(escapeRegExp(other.valueOf())) >= 0
     }
 }
 
@@ -288,7 +373,13 @@ Str.prototype.__add__ = function(other) {
     if (types.isinstance(other, Str)) {
         return this.valueOf() + other.valueOf()
     } else {
-        throw new exceptions.TypeError.$pyclass("Can't convert '" + type_name(other) + "' object to str implicitly")
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                "Can't convert '" + type_name(other) + "' object to str implicitly"
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass('must be str, not ' + type_name(other))
+        }
     }
 }
 
@@ -380,7 +471,7 @@ Str.prototype.__getitem__ = function(index) {
                 stop = result.length
             }
 
-            result = result.slice(stop, start).split('').reverse().join('')
+            result = jsSplit.apply(result.slice(stop, start), ['']).reverse().join('')
         }
 
         var steppedResult = ''
@@ -450,7 +541,13 @@ Str.prototype.__iadd__ = function(other) {
     if (types.isinstance(other, Str)) {
         return this.valueOf() + other.valueOf()
     } else {
-        throw new exceptions.TypeError.$pyclass("Can't convert '" + type_name(other) + "' object to str implicitly")
+        if (version.earlier('3.6')) {
+            throw new exceptions.TypeError.$pyclass(
+                "Can't convert '" + type_name(other) + "' object to str implicitly"
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass('must be str, not ' + type_name(other))
+        }
     }
 }
 
@@ -500,6 +597,26 @@ Str.prototype.__ior__ = function(other) {
 Str.prototype.__len__ = function() {
     var types = require('../types')
     return new types.Int(this.length)
+}
+
+Str.prototype.index = function(needle, offset) {
+    var types = require('../types')
+    var i = this.indexOf(needle, offset)
+    if (i < 0) {
+        throw new exceptions.ValueError.$pyclass('substring not found')
+    }
+    return new types.Int(i)
+}
+
+var jsSplit = String.prototype.split
+
+Str.prototype.split = function(sep) {
+    var types = require('../types')
+    if (sep !== undefined) {
+        return new types.List(jsSplit.apply(this, [sep]))
+    }
+    // default is to split on all white space
+    return new types.List(jsSplit.apply(this, [/\s/]))
 }
 
 Str.prototype.join = function(iter) {
@@ -646,6 +763,23 @@ Str.prototype.endswith = function(str) {
     return this.slice(this.length - str.length) === str
 }
 
+Str.prototype.isalpha = function() {
+    // TODO: should check unicode category is Lm, Lt, Lu, Ll, or Lo
+    if (this.match('[a-zA-Z]+')) {
+        return true
+    } else {
+        return false
+    }
+}
+
+Str.prototype.isdigit = function() {
+    if (this.match('[0-9]+')) {
+        return true
+    } else {
+        return false
+    }
+}
+
 Str.prototype.isupper = function() {
     if (!this.match('[a-zA-Z]')) {
         return false
@@ -680,6 +814,11 @@ Str.prototype.swapcase = function() {
         }
     }
     return swapped
+}
+
+Str.prototype.isidentifier = function() {
+    // TODO: implement
+    return true
 }
 
 // Based on https://en.wikipedia.org/wiki/Universal_hashing#Hashing_strings

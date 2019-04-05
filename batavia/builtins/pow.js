@@ -17,17 +17,21 @@ function pow(args, kwargs) {
 
         if (!types.isinstance(x, types.Int) ||
             !types.isinstance(y, types.Int) ||
-            !types.isinstance(y, types.Int)) {
-            throw new exceptions.TypeError.$pyclass('pow() requires all arguments be integers when 3 arguments are present')
+            !types.isinstance(z, types.Int)) {
+            throw new exceptions.TypeError.$pyclass('pow() 3rd argument not allowed unless all arguments are integers')
         }
         if (y < 0) {
-            throw new exceptions.TypeError.$pyclass('Builtin Batavia does not support negative exponents')
+            throw new exceptions.TypeError.$pyclass('pow() 2nd argument cannot be negative when 3rd argument specified')
         }
-        if (y === 0) {
-            return 1
-        }
-        if (z === 1) {
+
+        // if z is 1 or -1 then answer is always 0
+        if (parseInt(z) === 1 || parseInt(z) === -1) {
             return 0
+        }
+
+        // if y is 0 provided z is not 1 or -1, then answer is always 1
+        if (parseInt(y) === 0) {
+            return 1
         }
 
         // right-to-left exponentiation to reduce memory and time

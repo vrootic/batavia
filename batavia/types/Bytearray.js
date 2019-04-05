@@ -16,6 +16,10 @@ function Bytearray(val) {
 
 create_pyclass(Bytearray, 'bytearray')
 
+Bytearray.prototype.__dir__ = function() {
+    return "['__add__', '__alloc__', '__class__', '__contains__', '__delattr__', '__delitem__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__gt__', '__hash__', '__iadd__', '__imul__', '__init__', '__iter__', '__le__', '__len__', '__lt__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmul__', '__setattr__', '__setitem__', '__sizeof__', '__str__', '__subclasshook__', 'append', 'capitalize', 'center', 'clear', 'copy', 'count', 'decode', 'endswith', 'expandtabs', 'extend', 'find', 'fromhex', 'index', 'insert', 'isalnum', 'isalpha', 'isdigit', 'islower', 'isspace', 'istitle', 'isupper', 'join', 'ljust', 'lower', 'lstrip', 'maketrans', 'partition', 'pop', 'remove', 'replace', 'reverse', 'rfind', 'rindex', 'rjust', 'rpartition', 'rsplit', 'rstrip', 'split', 'splitlines', 'startswith', 'strip', 'swapcase', 'title', 'translate', 'upper', 'zfill']"
+}
+
 /**************************************************
  * Javascript compatibility methods
  **************************************************/
@@ -75,9 +79,7 @@ Bytearray.prototype.__eq__ = function(other) {
 
     if (other !== None) {
         var val
-        if (types.isinstance(other, [
-            types.Bool, types.Int, types.Float])
-                ) {
+        if (types.isinstance(other, [types.Bool, types.Int, types.Float])) {
             return false
         } else {
             return this.valueOf() === val
@@ -91,9 +93,7 @@ Bytearray.prototype.__ne__ = function(other) {
 
     if (other !== None) {
         var val
-        if (types.isinstance(other, [
-            types.Bool, types.Int, types.Float])
-                ) {
+        if (types.isinstance(other, [types.Bool, types.Int, types.Float])) {
             return true
         } else {
             return this.valueOf() !== val
@@ -172,8 +172,15 @@ Bytearray.prototype.__mod__ = function(other) {
 }
 
 Bytearray.prototype.__add__ = function(other) {
-    var types = require('../types')
-    if (types.isinstance(other, types.Bool)) {
+    let Buffer = require('buffer').Buffer
+    let types = require('../types')
+    if (types.isinstance(other, types.Bytearray)) {
+        let combined_bytes = new types.Bytes(Buffer.concat([this.val.val, other.val.val]))
+        return new Bytearray(combined_bytes)
+    } else if (types.isinstance(other, types.Bytes)) {
+        let combined_bytes = new types.Bytes(Buffer.concat([this.val.val, other.val]))
+        return new Bytearray(combined_bytes)
+    } else {
         throw new exceptions.TypeError.$pyclass("can't concat bytearray to " + type_name(other))
     }
 }
@@ -223,7 +230,19 @@ Bytearray.prototype.__itruediv__ = function(other) {
 }
 
 Bytearray.prototype.__iadd__ = function(other) {
-    throw new exceptions.NotImplementedError.$pyclass('Bytearray.__iadd__ has not been implemented')
+    let Buffer = require('buffer').Buffer
+    let types = require('../types')
+    if (types.isinstance(other, types.Bytearray)) {
+        let combined_bytes = new types.Bytes(Buffer.concat([this.val.val, other.val.val]))
+        this.val = combined_bytes
+        return this
+    } else if (types.isinstance(other, types.Bytes)) {
+        let combined_bytes = new types.Bytes(Buffer.concat([this.val.val, other.val]))
+        this.val = combined_bytes
+        return this
+    } else {
+        throw new exceptions.TypeError.$pyclass("can't concat bytearray to " + type_name(other))
+    }
 }
 
 Bytearray.prototype.__isub__ = function(other) {
@@ -268,6 +287,10 @@ Bytearray.prototype.__ior__ = function(other) {
 
 Bytearray.prototype.copy = function() {
     return new Bytearray(this.valueOf())
+}
+
+Bytearray.prototype.__len__ = function() {
+    return this.val.__len__()
 }
 
 /**************************************************

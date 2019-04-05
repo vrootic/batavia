@@ -1,7 +1,11 @@
 var PyObject = require('../core').Object
 var exceptions = require('../core').exceptions
+var version = require('../core').version
 var type_name = require('../core').type_name
 var create_pyclass = require('../core').create_pyclass
+
+// Helper function defined in Float.js
+var scientific_notation_exponent_fix = require('./Float').scientific_notation_exponent_fix
 
 /*************************************************************************
  * A Python complex type
@@ -24,14 +28,17 @@ function part_from_str(s) {
 function part_to_str(x) {
     var x_str
     if (x) {
-        x_str = x.valueOf().toString()
-        var abs_len = Math.abs(x.valueOf()).toString().length
-        if (abs_len >= 19) {
-            // force conversion to scientific
-            var new_str = x.valueOf().toExponential()
-            if (new_str.length < x_str.length) {
-                x_str = new_str
+        if (x === Math.round(x)) {
+            // Integer
+            if (Math.abs(x) >= 1e16) {
+                x_str = scientific_notation_exponent_fix(x.toExponential())
+            } else {
+                x_str = x.toString()
             }
+        } else {
+            // Reuse float's implementation of __str__
+            var types = require('../types')
+            x_str = (new types.Float(x)).__str__()
         }
     } else if (Object.is(x, -0)) {
         x_str = '-0'
@@ -39,6 +46,16 @@ function part_to_str(x) {
         x_str = '0'
     }
     return x_str
+}
+
+function under_js_precision(complex) {
+    // With complex numbers, imaginary value may be off in JavaScript,
+    // due to JS imprecision (Epsilon) and/or too big difference between
+    // real and imaginary components, and may have to be rounded.
+    // Return True if it's the case.
+    return complex.real !== 0 && Math.abs(complex.imag) < 10 / 9 * Number.EPSILON &&
+           Math.abs(complex.imag / complex.real) > Number.EPSILON &&
+           Math.abs(complex.imag / complex.real) < 1e-10
 }
 
 function Complex(re, im) {
@@ -60,13 +77,29 @@ function Complex(re, im) {
             this.imag = -this.imag
         }
     } else if (!types.isinstance(re, [types.Float, types.Int, types.Bool, types.Complex])) {
-        throw new exceptions.TypeError.$pyclass(
-            "complex() argument must be a string, a bytes-like object or a number, not '" + type_name(re) + "'"
-        )
+        if (version.later('3.5')) {
+            throw new exceptions.TypeError.$pyclass(
+                "complex() first argument must be a string, a bytes-like object or a number, not '" +
+                type_name(re) + "'"
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "complex() argument must be a string, a bytes-like object or a number, not '" +
+                type_name(re) + "'"
+            )
+        }
     } else if (!types.isinstance(im, [types.Float, types.Int, types.Bool, types.Complex])) {
-        throw new exceptions.TypeError.$pyclass(
-            "complex() argument must be a string, a bytes-like object or a number, not '" + type_name(im) + "'"
-        )
+        if (version.later('3.5')) {
+            throw new exceptions.TypeError.$pyclass(
+                "complex() first argument must be a string, a bytes-like object or a number, not '" +
+                type_name(im) + "'"
+            )
+        } else {
+            throw new exceptions.TypeError.$pyclass(
+                "complex() argument must be a string, a bytes-like object or a number, not '" +
+                type_name(im) + "'"
+            )
+        }
     } else if (typeof re === 'number' && typeof im === 'number') {
         this.real = re
         this.imag = im
@@ -85,6 +118,14 @@ function Complex(re, im) {
 }
 
 create_pyclass(Complex, 'complex')
+
+var COMPLEX_ROUND_DECIMALS = Math.floor(Math.abs(Math.log10(Number.EPSILON)))
+
+Complex.prototype.COMPLEX_ROUND_DECIMALS = COMPLEX_ROUND_DECIMALS
+
+Complex.prototype.__dir__ = function() {
+    return "['__abs__', '__add__', '__bool__', '__class__', '__delattr__', '__dir__', '__divmod__', '__doc__', '__eq__', '__float__', '__floordiv__', '__format__', '__ge__', '__getattribute__', '__getnewargs__', '__gt__', '__hash__', '__init__', '__int__', '__le__', '__lt__', '__mod__', '__mul__', '__ne__', '__neg__', '__new__', '__pos__', '__pow__', '__radd__', '__rdivmod__', '__reduce__', '__reduce_ex__', '__repr__', '__rfloordiv__', '__rmod__', '__rmul__', '__rpow__', '__rsub__', '__rtruediv__', '__setattr__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__truediv__', 'conjugate', 'imag', 'real']"
+}
 
 /**************************************************
  * Javascript compatibility methods
@@ -108,11 +149,15 @@ Complex.prototype.__repr__ = function() {
 
 Complex.prototype.__str__ = function() {
     if (this.real.valueOf() || Object.is(this.real, -0)) {
+        if (under_js_precision(this)) {
+            this.imag = parseFloat(this.imag.toFixed(this.COMPLEX_ROUND_DECIMALS))
+        }
+
         var sign
-        if (this.imag >= 0) {
-            sign = '+'
-        } else {
+        if (Object.is(this.imag, -0) || this.imag < 0) {
             sign = '-'
+        } else {
+            sign = '+'
         }
         return '(' + part_to_str(this.real) + sign + part_to_str(Math.abs(this.imag)) + 'j)'
     } else {
@@ -125,11 +170,27 @@ Complex.prototype.__str__ = function() {
  **************************************************/
 
 Complex.prototype.__lt__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: complex() < ' + type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: complex() < ' + type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<' not supported between instances of 'complex' and '" + type_name(other) + "'"
+        )
+    }
 }
 
 Complex.prototype.__le__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: complex() <= ' + type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: complex() <= ' + type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<=' not supported between instances of 'complex' and '" + type_name(other) + "'"
+        )
+    }
 }
 
 Complex.prototype.__eq__ = function(other) {
@@ -146,6 +207,9 @@ Complex.prototype.__eq__ = function(other) {
             } else {
                 val = 0.0
             }
+        } else if (types.isinstance(other, types.Int)) {
+            // Int.valueOf() returns a string, convert it
+            val = parseInt(other.valueOf())
         } else {
             val = other.valueOf()
         }
@@ -159,11 +223,27 @@ Complex.prototype.__ne__ = function(other) {
 }
 
 Complex.prototype.__gt__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: complex() > ' + type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: complex() > ' + type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'>' not supported between instances of 'complex' and '" + type_name(other) + "'"
+        )
+    }
 }
 
 Complex.prototype.__ge__ = function(other) {
-    throw new exceptions.TypeError.$pyclass('unorderable types: complex() >= ' + type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: complex() >= ' + type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'>=' not supported between instances of 'complex' and '" + type_name(other) + "'"
+        )
+    }
 }
 
 /**************************************************
@@ -240,6 +320,9 @@ function __div__(x, y, inplace) {
         }
     } else if (types.isinstance(y, types.Complex)) {
         var den = Math.pow(y.real, 2) + Math.pow(y.imag, 2)
+        if (den === 0) {
+            throw new exceptions.ZeroDivisionError.$pyclass('complex division by zero')
+        }
         var num_real = x.real * y.real + x.imag * y.imag
         var num_imag = x.imag * y.real - x.real * y.imag
         var real = num_real / den

@@ -3,7 +3,7 @@ import base64
 import py_compile
 import tempfile
 
-from django.conf.urls import url
+from django.urls import path
 from django.shortcuts import render
 from test import pystone
 
@@ -19,7 +19,7 @@ def bytecode(sourcefile):
                     os.path.dirname(sourcefile),
                     tempname
                 ), 'rb') as compiled:
-            payload = base64.encodebytes(compiled.read())
+            payload = base64.encodebytes(compiled.read()).decode()
         os.remove(tempname)
     except Exception as e:
         print(e)
@@ -28,7 +28,8 @@ def bytecode(sourcefile):
         'compiled': payload,
         'filename': sourcefile
     }
-    
+
+
 def home(request):
     ctx = {
         'modules': {
@@ -50,7 +51,7 @@ def home(request):
                 }
             }
         }
-    } 
+    }
     if request.method.lower() == 'post' and request.POST['code']:
         tempfd, tempname = tempfile.mkstemp()
         with os.fdopen(tempfd, 'w+b') as f:
@@ -66,5 +67,5 @@ def home(request):
 
 
 urlpatterns = [
-    url(r'^$', home),
+    path('', home),
 ]

@@ -1,6 +1,7 @@
 /* eslint-disable no-extend-native */
 var PyObject = require('../core').Object
 var exceptions = require('../core').exceptions
+var version = require('../core').version
 var callables = require('../core').callables
 var type_name = require('../core').type_name
 var create_pyclass = require('../core').create_pyclass
@@ -22,6 +23,10 @@ function Set(args, kwargs) {
 
 create_pyclass(Set, 'set')
 
+Set.prototype.__dir__ = function() {
+    return "['__and__', '__class__', '__contains__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__iand__', '__init__', '__ior__', '__isub__', '__iter__', '__ixor__', '__le__', '__len__', '__lt__', '__ne__', '__new__', '__or__', '__rand__', '__reduce__', '__reduce_ex__', '__repr__', '__ror__', '__rsub__', '__rxor__', '__setattr__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__xor__', 'add', 'clear', 'copy', 'difference', 'difference_update', 'discard', 'intersection', 'intersection_update', 'isdisjoint', 'issubset', 'issuperset', 'pop', 'remove', 'symmetric_difference', 'symmetric_difference_update', 'union', 'update']"
+}
+
 /**************************************************
  * Javascript compatibility methods
  **************************************************/
@@ -35,7 +40,7 @@ Set.prototype.toString = function() {
  **************************************************/
 
 Set.prototype.__len__ = function() {
-    return this.data.size
+    return this.data.__len__()
 }
 
 Set.prototype.__bool__ = function() {
@@ -69,7 +74,15 @@ Set.prototype.__lt__ = function(other) {
     if (types.isinstance(other, [types.Set, types.FrozenSet])) {
         return new types.Bool(this.data.keys().length < other.data.keys().length)
     }
-    throw new exceptions.TypeError.$pyclass('unorderable types: set() < ' + type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: set() < ' + type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<' not supported between instances of 'set' and '" + type_name(other) + "'"
+        )
+    }
 }
 
 Set.prototype.__le__ = function(other) {
@@ -78,7 +91,15 @@ Set.prototype.__le__ = function(other) {
     if (types.isinstance(other, [types.Set, types.FrozenSet])) {
         return new types.Bool(this.data.keys().length <= other.data.keys().length)
     }
-    throw new exceptions.TypeError.$pyclass('unorderable types: set() <= ' + type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: set() <= ' + type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'<=' not supported between instances of 'set' and '" + type_name(other) + "'"
+        )
+    }
 }
 
 Set.prototype.__eq__ = function(other) {
@@ -110,7 +131,15 @@ Set.prototype.__gt__ = function(other) {
     if (types.isinstance(other, [types.Set, types.FrozenSet])) {
         return new types.Bool(this.data.keys().length > other.data.keys().length)
     }
-    throw new exceptions.TypeError.$pyclass('unorderable types: set() > ' + type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: set() > ' + type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'>' not supported between instances of 'set' and '" + type_name(other) + "'"
+        )
+    }
 }
 
 Set.prototype.__ge__ = function(other) {
@@ -119,7 +148,15 @@ Set.prototype.__ge__ = function(other) {
     if (types.isinstance(other, [types.Set, types.FrozenSet])) {
         return new types.Bool(this.data.keys().length >= other.data.keys().length)
     }
-    throw new exceptions.TypeError.$pyclass('unorderable types: set() >= ' + type_name(other) + '()')
+    if (version.earlier('3.6')) {
+        throw new exceptions.TypeError.$pyclass(
+            'unorderable types: set() >= ' + type_name(other) + '()'
+        )
+    } else {
+        throw new exceptions.TypeError.$pyclass(
+            "'>=' not supported between instances of 'set' and '" + type_name(other) + "'"
+        )
+    }
 }
 
 Set.prototype.__contains__ = function(other) {

@@ -12,7 +12,6 @@ class PowTests(TranspileTestCase):
             print(pow(x, y, z))
         """)
 
-    @expectedFailure
     def test_int_neg_y_pos_z(self):
         self.assertCodeExecution("""
             x = 3
@@ -21,7 +20,6 @@ class PowTests(TranspileTestCase):
             print(pow(x, y, z))
         """)
 
-    @expectedFailure
     def test_int_neg_y_neg_z(self):
         self.assertCodeExecution("""
             x = 3
@@ -30,7 +28,22 @@ class PowTests(TranspileTestCase):
             print(pow(x, y, z))
         """)
 
-    @expectedFailure
+    def test_int_y_zero_z_one(self):
+        self.assertCodeExecution("""
+            x = 1
+            y = 0
+            z = 1
+            print(pow(x, y, z))
+        """)
+
+    def test_int_y_zero_z_neg_one(self):
+        self.assertCodeExecution("""
+            x = 1
+            y = 0
+            z = -1
+            print(pow(x, y, z))
+        """)
+
     def test_float_x_with_z(self):
         self.assertCodeExecution("""
             x = 3.3
@@ -39,7 +52,6 @@ class PowTests(TranspileTestCase):
             print(pow(x, y, z))
             """)
 
-    @expectedFailure
     def test_float_y_with_z(self):
         self.assertCodeExecution("""
             x = 3
@@ -48,7 +60,6 @@ class PowTests(TranspileTestCase):
             print(pow(x, y, z))
             """)
 
-    @expectedFailure
     def test_float(self):
         self.assertCodeExecution("""
             x = 3.3
@@ -57,7 +68,6 @@ class PowTests(TranspileTestCase):
             print(pow(x, y, z))
         """)
 
-    @expectedFailure
     def test_float_neg_y_with_z(self):
         self.assertCodeExecution("""
             x = 3.3
@@ -127,24 +137,6 @@ class BuiltinTwoargPowFunctionTests(BuiltinTwoargFunctionTestCase, TranspileTest
         'test_bytearray_str',
         'test_bytearray_tuple',
 
-        'test_bytes_bool',
-        'test_bytes_bytearray',
-        'test_bytes_bytes',
-        'test_bytes_class',
-        'test_bytes_complex',
-        'test_bytes_dict',
-        'test_bytes_float',
-        'test_bytes_frozenset',
-        'test_bytes_int',
-        'test_bytes_list',
-        'test_bytes_None',
-        'test_bytes_NotImplemented',
-        'test_bytes_range',
-        'test_bytes_set',
-        'test_bytes_slice',
-        'test_bytes_str',
-        'test_bytes_tuple',
-
         'test_class_bool',
         'test_class_bytearray',
         'test_class_bytes',
@@ -171,7 +163,6 @@ class BuiltinTwoargPowFunctionTests(BuiltinTwoargFunctionTestCase, TranspileTest
         'test_float_float',
         'test_float_int',
 
-        'test_int_complex',
         'test_int_float',
 
         'test_range_bool',
@@ -191,22 +182,4 @@ class BuiltinTwoargPowFunctionTests(BuiltinTwoargFunctionTestCase, TranspileTest
         'test_range_slice',
         'test_range_str',
         'test_range_tuple',
-
-        'test_slice_bool',
-        'test_slice_bytearray',
-        'test_slice_bytes',
-        'test_slice_class',
-        'test_slice_complex',
-        'test_slice_dict',
-        'test_slice_float',
-        'test_slice_frozenset',
-        'test_slice_int',
-        'test_slice_list',
-        'test_slice_None',
-        'test_slice_NotImplemented',
-        'test_slice_range',
-        'test_slice_set',
-        'test_slice_slice',
-        'test_slice_str',
-        'test_slice_tuple',
     ]

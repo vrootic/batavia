@@ -15,8 +15,8 @@ Batavia
     :target: https://pypi.python.org/pypi/batavia
 .. |license| image:: https://img.shields.io/pypi/l/batavia.svg
     :target: https://github.com/pybee/batavia/blob/master/LICENSE
-.. |build-status| image:: https://beekeeper.herokuapp.com/projects/pybee/batavia/shield
-    :target: https://beekeeper.herokuapp.com/projects/pybee/batavia
+.. |build-status| image:: https://beekeeper.beeware.org/projects/pybee/batavia/shield
+    :target: https://beekeeper.beeware.org/projects/pybee/batavia
 .. |gitter| image:: https://badges.gitter.im/pybee/general.svg
     :target: https://gitter.im/pybee/general
 
@@ -60,7 +60,7 @@ Downloading and Installing
 
 2. Setup a virtualenv:
 
-(for other environments, see `Getting Started <https://batavia.readthedocs.io/en/latest/intro/tutorial-0.html>`_).
+(for other environments, see `Getting Started <https://batavia.readthedocs.io/en/latest/tutorial/tutorial-0.html>`_).
 
 
 Linux/Unix/Mac
@@ -102,14 +102,14 @@ You must have a recent version of Node; we do our testing using v6.9.1. Once you
 $ npm install
 
 
-4. Compile the Batavia library and bundle it’s dependencies
+4. Compile the Batavia library and bundle its dependencies
 
-Run the follwing command in the terminal ::
+Run the following command in the terminal ::
 
 $ npm run build
 
 
-For more detailed setup instructions, see the `Getting Started tutorial <https://batavia.readthedocs.io/en/latest/intro/tutorial-0.html>`_
+For more detailed setup instructions, see the `Getting Started tutorial <https://batavia.readthedocs.io/en/latest/tutorial/tutorial-0.html>`_
 
 
 Running Batavia in the browser
@@ -119,23 +119,42 @@ After you have setup the local installation of Batavia, you can now run Python i
 
 $ cd testserver
 $ pip install -r requirements.txt
+
+On Linux/macOS:
+
 $ ./manage.py runserver
+
+On Windows:
+
+> python manage.py runserver
 
 then open a web browser at `http://localhost:8000 <http://localhost:8000>`_
 
 For more detailed instructions, see the `Python In The Browser
-<http://batavia.readthedocs.io/en/latest/intro/tutorial-1.html>`_ guide.
+<http://batavia.readthedocs.io/en/latest/tutorial/tutorial-1.html>`_ guide.
+
+
+Running Batavia in the terminal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to run some Python code from a file in the terminal, you can also run Batavia on Node: ::
+
+$ npm run python /path/to/python/file.py
+
+This will should run the Python file and show output on the terminal.
+
+For more details see `Running Python code using Batavia from the command line
+<http://batavia.readthedocs.io/en/latest/tutorial/tutorial-2.html>`_.
 
 
 Documentation
 -------------
 
-`Documentation for Batavia <http://batavia.readthedocs.io/en/latest/>`_ can be found on on `Read The Docs <https://readthedocs.org>`_, including:
+`Documentation for Batavia <http://batavia.readthedocs.io/en/latest/>`_ can be found on `Read The Docs <https://readthedocs.org>`_, including:
 
-* `Project Internals <http://batavia.readthedocs.io/en/latest/internals/index.html>`_
-* `Getting Started <http://batavia.readthedocs.io/en/latest/intro/index.html>`_
-* `So, why is it called "Batavia"? <https://batavia.readthedocs.io/en/latest/intro/faq.html#why-batavia>`_
-* `More Frequently Asked Questions <https://batavia.readthedocs.io/en/latest/intro/faq.html>`_
+* `Getting Started <https://batavia.readthedocs.io/en/latest/tutorial/index.html>`__
+* `So, why is it called "Batavia"? <https://batavia.readthedocs.io/en/latest/background/faq.html#why-batavia>`_
+* `More Frequently Asked Questions <https://batavia.readthedocs.io/en/latest/background/faq.html>`_
 
 
 Contributing

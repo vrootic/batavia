@@ -2,7 +2,13 @@ from .. utils import TranspileTestCase, UnaryOperationTestCase, BinaryOperationT
 
 
 class BytearrayTests(TranspileTestCase):
-    pass
+    def test_len(self):
+        self.assertCodeExecution("""
+        print(len(bytearray()))
+        print(type(len(bytearray())))
+        print(len(bytearray([1, 2])))
+        """)
+
 
 
 class UnaryBytearrayOperationTests(UnaryOperationTestCase, TranspileTestCase):
@@ -20,23 +26,6 @@ class BinaryBytearrayOperationTests(BinaryOperationTestCase, TranspileTestCase):
     data_type = 'bytearray'
 
     not_implemented = [
-        'test_add_bytearray',
-        'test_add_bytes',
-        'test_add_class',
-        'test_add_complex',
-        'test_add_dict',
-        'test_add_float',
-        'test_add_frozenset',
-        'test_add_int',
-        'test_add_list',
-        'test_add_None',
-        'test_add_NotImplemented',
-        'test_add_range',
-        'test_add_set',
-        'test_add_slice',
-        'test_add_str',
-        'test_add_tuple',
-
         'test_and_bool',
         'test_and_bytearray',
         'test_and_bytes',
@@ -314,24 +303,6 @@ class InplaceBytearrayOperationTests(InplaceOperationTestCase, TranspileTestCase
     data_type = 'bytearray'
 
     not_implemented = [
-        'test_add_bool',
-        'test_add_bytearray',
-        'test_add_bytes',
-        'test_add_class',
-        'test_add_complex',
-        'test_add_dict',
-        'test_add_float',
-        'test_add_frozenset',
-        'test_add_int',
-        'test_add_list',
-        'test_add_None',
-        'test_add_NotImplemented',
-        'test_add_range',
-        'test_add_set',
-        'test_add_slice',
-        'test_add_str',
-        'test_add_tuple',
-
         'test_and_bool',
         'test_and_bytearray',
         'test_and_bytes',

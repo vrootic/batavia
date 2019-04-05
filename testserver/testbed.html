@@ -7,7 +7,7 @@
     <!--
         To run this demo:
 
-        * Add Django 1.8 to your virtual environment
+        * Add Django to your virtual environment
         * Start the testserver::
 
             ./manage.py runserver
@@ -19,10 +19,9 @@
         on the visible page.
       -->
 
-    <!--These three are from CodeMirror, - https://codemirror.net/ - for adding syntax highlighting to text area -->
-    <script src="/static/CodeMirror/lib/codemirror.js"></script>
-    <script src="/static/CodeMirror/mode/python/python.js"></script>
-    <link rel=stylesheet href="/static/CodeMirror/lib/codemirror.css">
+    <!--These two are from CodeMirror, - https://codemirror.net/ - for adding syntax highlighting to text area -->
+    <script src="/static/codemirror.js"></script>
+    <link rel=stylesheet href="/static/codemirror.css">
 
     <!--Main styles for this site-->
     <link rel=stylesheet href="/static/styles/styles.css">
@@ -37,8 +36,8 @@
          The file encoded is the entire test.pystone module. The naming
          of the ID is significant - it's a naming convention that
          allows the Python `import` statement to find other modules. -->
-    <script 
-        id="batavia-test.pystone" 
+    <script
+        id="batavia-test.pystone"
         type="application/python-bytecode"
         data-filename="{{ modules.pystone.filename }}">
 {{ modules.pystone.compiled }}
@@ -127,6 +126,9 @@ function PyConsole(element) {
 PyConsole.prototype.write = function(buffer) {
     var text = document.createTextNode(buffer);
     this.element.appendChild(text);
+
+    // Console scrollbar stays bottom.
+    this.element.scrollTop = this.element.scrollHeight;
 
     // Also echo to the console.
     console.log(buffer)

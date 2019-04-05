@@ -19,27 +19,40 @@ how to set this up are `on our Environment setup guide
 
 3. We'll need to create a virtual environment, and install Batavia into it.
 
- * For Linux, MacOS::
+.. tabs::
 
-   $ python3.5 -m venv venv
-   $ . venv/bin/activate
-   $ cd batavia
-   $ pip install -e .
+    .. group-tab:: Linux
 
- * For Windows::
+        .. code-block:: bash
 
-   > py -3.5 -m venv venv
-   > venv\Scripts\activate
-   > cd batavia
-   > pip install -e .
+           $ python3.5 -m venv venv
+           $ . venv/bin/activate
+           $ cd batavia
+           $ pip install -e .
 
-* For Windows (with only conda installed)::
+    .. group-tab:: MacOS
 
-   > pip install virtualenvwrapper-win
-   > mkvirtualenv venv
-   > workon venv
-   > cd batavia
-   > pip install -e .
+        .. code-block:: bash
+
+           $ python3.5 -m venv venv
+           $ . venv/bin/activate
+           $ cd batavia
+           $ pip install -e .
+
+     .. group-tab:: Windows
+
+           > py -3.5 -m venv venv
+           > venv\Scripts\activate
+           > cd batavia
+           > pip install -e .
+
+     .. group-tab:: Windows (with only conda installed)
+
+           > pip install virtualenvwrapper-win
+           > mkvirtualenv venv
+           > workon venv
+           > cd batavia
+           > pip install -e .
 
 4. In addition, you need to install `Node.js <https://nodejs.org>`_. You need
    to have a recent version of Node; we test using v6.9.1. It's possible you
@@ -81,8 +94,9 @@ You now have a working Batavia environment!
 Next Steps
 ----------
 
-Next, we can :doc:`setup the sandbox <tutorial-1>`, and try out
-running Python in your browser.
+Next, we can :doc:`setup the sandbox <tutorial-1>`, and try out running Python
+in your browser. Or your can try running some Python code :doc:`from the
+command line <tutorial-2>`.
 
 Troubleshooting Tips
 --------------------

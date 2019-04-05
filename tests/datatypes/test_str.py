@@ -665,6 +665,44 @@ class StrTests(TranspileTestCase):
             print('No exception for str.capitalize() with multiple arguments')
         """)
 
+    def test_isalpha(self):
+        self.assertCodeExecution("""
+        for i in range(32, 128):
+            print(i, chr(i).isalpha())
+        """)
+
+    def test_isdigit(self):
+        self.assertCodeExecution("""
+        for i in range(32, 128):
+            print(i, chr(i).isdigit())
+        """)
+
+    def test_split(self):
+        self.assertCodeExecution("""
+        print("abc".split())
+        print("abc abc abc".split())
+        print("a".split(","))
+        print("a,b".split(","))
+        print("a,b,c".split(","))
+        print(",,,".split(","))
+        """)
+
+    def test_index(self):
+        self.assertCodeExecution("""
+        print("abca".index("a", 0))
+        print("abca".index("a", 1))
+        print("abc".index("a"))
+        print("abc".index("b"))
+        print("abc".index("c"))
+        print("abc".index("bc"))
+        print("abc".index("d"))
+        """)
+
+    def test_contains_escapes_regular_expressions(self):
+        self.assertCodeExecution("""
+        print('(' not in '(/)')
+        """)
+
 class FormatTests(TranspileTestCase):
         alternate = ('#', '')
 
@@ -1363,14 +1401,6 @@ class UnaryStrOperationTests(UnaryOperationTestCase, TranspileTestCase):
 class BinaryStrOperationTests(BinaryOperationTestCase, TranspileTestCase):
     data_type = 'str'
 
-    not_implemented = [
-        'test_modulo_class',
-    ]
-
 
 class InplaceStrOperationTests(InplaceOperationTestCase, TranspileTestCase):
     data_type = 'str'
-
-    not_implemented = [
-        'test_modulo_class',
-    ]
